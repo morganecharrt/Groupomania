@@ -13,11 +13,11 @@ router.beforeEach((to) => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col justify-between items-stretch">
+  <div class="h-full flex flex-col justify-between">
     <header>
       <NavHeader />
     </header>
-    <div class="w-[80%] mx-auto my-0 h-full relative self-start">
+    <div class="w-[80%] mx-auto my-0 self-start">
       <RouterView />
     </div>
     <NavFooter />
