@@ -11,14 +11,19 @@ export function useAuth() {
    * @param {string} password - password of user
    */
   async function login(email, password) {
-    const res = await axios.post("http://localhost:8000/api/auth/login", {
-      email,
-      password,
-    });
+    const res = await axios
+      .post("http://localhost:8000/api/auth/login", {
+        email,
+        password,
+      })
+      .catch((error) => {
+        throw error.response.data.error;
+      });
 
     store.user["authToken"] = res.data.token;
     store.user["userId"] = res.data.userId;
-    store.user["name"] = res.data.username;
+    store.user["username"] = res.data.username;
+    store.user["isAdmin"] = res.data.isAdmin;
 
     return res.data;
   }
@@ -30,15 +35,24 @@ export function useAuth() {
    * @param {string} password - password of user
    */
   async function signup(username, email, password) {
-    const res = await axios.post("http://localhost:8000/api/auth/signup", {
-      username,
-      email,
-      password,
-    });
+    const res = await axios
+      .post("http://localhost:8000/api/auth/signup", {
+        username,
+        email,
+        password,
+      })
+      .catch((error) => {
+        throw handleErrors(error.response.data.error._message);
+      });
 
     await login(email, password);
 
     return res.data;
+  }
+
+  function handleErrors(error) {
+    if (error === "User validation failed") return "L'email est déjà existant";
+    else error;
   }
   return { login, signup };
 }

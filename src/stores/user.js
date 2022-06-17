@@ -4,9 +4,10 @@ export const useUserStore = defineStore({
   id: "user",
   state: () => ({
     user: {
-      name: "",
+      username: "",
       authToken: "",
       userId: "",
+      isAdmin: false,
     },
   }),
   getters: {
