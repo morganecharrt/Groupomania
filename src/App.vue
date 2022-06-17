@@ -17,7 +17,7 @@ router.beforeEach((to) => {
     <header>
       <NavHeader />
     </header>
-    <div class="w-[80%] mx-auto my-0 self-start">
+    <div class="w-[80%] mx-auto my-0 self-start grow">
       <RouterView />
     </div>
     <NavFooter />
