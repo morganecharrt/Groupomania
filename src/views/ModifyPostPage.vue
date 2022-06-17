@@ -15,7 +15,7 @@ const error = ref("");
 
 const updatedPost = reactive({
   description: "",
-  userId: authUser.userId,
+  userId: "",
   _id: "",
   imageUrl: "",
 });
@@ -27,6 +27,7 @@ onMounted(async () => {
   updatedPost.imageUrl = post.value.imageUrl;
   updatedPost.description = post.value.description;
   updatedPost._id = post.value._id;
+  updatedPost.userId = post.userId;
 });
 
 function onFileChange(e) {
