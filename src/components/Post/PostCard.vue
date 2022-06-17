@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { usePost } from "../../composables/usePost";
@@ -7,12 +7,9 @@ import DeleteIcon from "../Icons/DeleteIcon.vue";
 import LikeIcon from "../Icons/LikeIcon.vue";
 import EditIcon from "../Icons/EditIcon.vue";
 
-const { likePost } = usePost();
+const error = ref("");
+const { likePost, getUser } = usePost();
 const { authUser } = useUserStore();
-
-const isLike = ref(false);
-isLike.value =
-  post.like.findIndex((element) => element == authUser.userId) > -1 ? true : false;
 
 const post = defineProps({
   _id: {
@@ -25,7 +22,7 @@ const post = defineProps({
   },
   imageUrl: {
     type: String,
-    required: true,
+    required: false,
   },
   userId: {
     type: String,
@@ -36,6 +33,7 @@ const post = defineProps({
     required: true,
   },
 });
+
 const emit = defineEmits(["deletePost"]);
 const handleDelete = () => {
   let result = confirm("Voulez-vous vraiment supprimer cette publication ?");
@@ -44,9 +42,19 @@ const handleDelete = () => {
   }
 };
 
+const isLike = ref(false);
+isLike.value =
+  post.like.findIndex((element) => element == authUser.userId) > -1
+    ? true
+    : false;
+
 const counterLike = ref(post.like.length);
-const handleLike = () => {
-  likePost(post._id, authUser.userId);
+const handleLike = async () => {
+  try {
+    await likePost(post._id, authUser.userId);
+  } catch (e) {
+    error.value = e;
+  }
 
   isLike.value = !isLike.value;
   if (isLike.value) {
@@ -55,6 +63,12 @@ const handleLike = () => {
     counterLike.value--;
   }
 };
+
+const user = ref(null);
+onMounted(async () => {
+  const data = await getUser(post.userId);
+  user.value = data;
+});
 </script>
 
 <template>
@@ -63,12 +77,22 @@ const handleLike = () => {
   >
     <div class="p-7 flex flex-col gap-7">
       <div>{{ post.description }}</div>
-      <img :src="post.imageUrl" class="object-contain h-36 w-full" />
+      <img
+        v-if="post.imageUrl != ''"
+        :src="post.imageUrl"
+        class="object-contain w-full rounded-md"
+      />
     </div>
-    <div class="flex flex-row w-full justify-end gap-2 bg-white p-2 border-t">
-      <div class="flex flex-row items-center">
-        <span class="">{{ counterLike }}</span>
-        <button @click.prevent="handleLike">
+    <div
+      class="flex flex-row w-full justify-end items-center gap-2 bg-white py-2 px-4 border-t"
+    >
+      <div v-if="user" class="justify-self-start grow">
+        Publié par <strong>{{ user.username }}</strong>
+      </div>
+      <div class="flex flex-row items-center justify-center">
+        <div class="text-primary p-1" v-if="error">{{ error }}</div>
+        <span class="text-sm">{{ counterLike }}</span>
+        <button @click.prevent="handleLike" class="relative">
           <LikeIcon
             class="w-5 h-5 hover:bg-backgroundLight cursor-pointer hover:stroke-primary p-2 rounded-full box-content duration-200"
             :class="
@@ -79,16 +103,19 @@ const handleLike = () => {
           />
         </button>
       </div>
-      <div class="inline-flex gap-2" v-if="authUser.userId === post.userId">
+      <div
+        class="inline-flex gap-2"
+        v-if="authUser.userId === post.userId || authUser.isAdmin"
+      >
         <RouterLink :to="`/modify-post/${post._id}`"
           ><EditIcon
             class="w-5 h-5 hover:bg-backgroundLight cursor-pointer stroke-tertiary hover:stroke-primary p-2 rounded-full box-content duration-200"
         /></RouterLink>
-        <button @click.prevent="handleDelete">
-          <DeleteIcon
-            class="w-5 h-5 hover:bg-backgroundLight cursor-pointer stroke-tertiary hover:stroke-primary p-2 rounded-full box-content duration-200"
-          />
-        </button>
+
+        <DeleteIcon
+          class="w-5 h-5 hover:bg-backgroundLight cursor-pointer stroke-tertiary hover:stroke-primary p-2 rounded-full box-content duration-200"
+          @click.prevent="handleDelete"
+        />
       </div>
     </div>
   </div>

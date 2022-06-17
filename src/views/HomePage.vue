@@ -8,6 +8,7 @@ const { authUser } = useUserStore();
 const { getAllPost, deletePost } = usePost();
 
 const allPosts = ref({});
+const error = ref("");
 
 onMounted(async () => {
   const data = await getAllPost();
@@ -15,18 +16,26 @@ onMounted(async () => {
 });
 
 async function handleDeletePost(postId) {
-  await deletePost(postId);
-  const data = await getAllPost();
-  allPosts.value = data;
+  try {
+    await deletePost(postId);
+  } catch (e) {
+    error.value = e;
+  }
+  allPosts.value = await getAllPost();
 }
 </script>
 
 <template>
   <div>
     <h2 class="my-14">
-      Bienvenue {{ authUser.name }}, découvrez les publications de vos collègues
+      Bienvenue {{ authUser.username }}, découvrez les publications de vos
+      collègues
     </h2>
-    <div class="flex flex-col items-center justify-center gap-7 w-full">
+    <div class="text-primary p-5" v-if="error">{{ error }}</div>
+    <div
+      v-if="allPosts.length > 0"
+      class="flex flex-col items-center justify-center gap-7 w-full"
+    >
       <PostCard
         v-for="post in allPosts"
         :key="post._id"
@@ -38,5 +47,6 @@ async function handleDeletePost(postId) {
         @deletePost="handleDeletePost(post._id)"
       />
     </div>
+    <div v-else class="text-xl">Pas de publications pour le moment</div>
   </div>
 </template>

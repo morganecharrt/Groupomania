@@ -6,28 +6,49 @@ export function usePost() {
   const { authUser } = useUserStore();
 
   async function getAllPost() {
-    const res = await axios.get("http://localhost:8000/api/post", {
-      headers: {
-        Authorization: `Bearer ${authUser.authToken}`,
-      },
-    });
- 
+    const res = await axios
+      .get("http://localhost:8000/api/post", {
+        headers: {
+          Authorization: `Bearer ${authUser.authToken}`,
+        },
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
     return res.data.reverse();
   }
 
+  async function getUser(userId) {
+    const res = await axios
+      .post("http://localhost:8000/api/auth/user", {
+        userId,
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return res.data;
+  }
+
   async function getOnePost(postId) {
-    const res = await axios.get("http://localhost:8000/api/post/" + postId, {
-      headers: {
-        Authorization: `Bearer ${authUser.authToken}`,
-      },
-    });
+    const res = await axios
+      .get("http://localhost:8000/api/post/" + postId, {
+        headers: {
+          Authorization: `Bearer ${authUser.authToken}`,
+        },
+      })
+      .catch((error) => {
+        throw error.response.data.message;
+      });
     return res.data;
   }
 
   async function updatePost(post, file) {
     const formData = new FormData();
     formData.append("post", JSON.stringify(post));
-    formData.append("image", file, file.name);
+    if (file) {
+      formData.append("image", file, file.name);
+    }
     const res = await axios.put(
       "http://localhost:8000/api/post/" + post._id,
       formData,
@@ -43,34 +64,48 @@ export function usePost() {
   async function createPost(post, file) {
     const formData = new FormData();
     formData.append("post", JSON.stringify(post));
-    formData.append("image", file, file.name);
-    const res = await axios.post("http://localhost:8000/api/post/", formData, {
-      headers: {
-        Authorization: `Bearer ${authUser.authToken}`,
-      },
-    });
+    if (file) {
+      formData.append("image", file, file.name);
+    }
+    const res = await axios
+      .post("http://localhost:8000/api/post/", formData, {
+        headers: {
+          Authorization: `Bearer ${authUser.authToken}`,
+        },
+      })
+      .catch((error) => {
+        throw error.response.data.message;
+      });
     return res.data;
   }
 
   async function deletePost(postId) {
-    const res = await axios.delete("http://localhost:8000/api/post/" + postId, {
-      headers: {
-        Authorization: `Bearer ${authUser.authToken}`,
-      },
-    });
+    const res = await axios
+      .delete("http://localhost:8000/api/post/" + postId, {
+        headers: {
+          Authorization: `Bearer ${authUser.authToken}`,
+        },
+      })
+      .catch((error) => {
+        throw error.response.data.message;
+      });
     return res.data;
   }
 
   async function likePost(postId, userId) {
-    const res = await axios.post(
-      "http://localhost:8000/api/post/" + postId + "/like",
-      { userId },
-      {
-        headers: {
-          Authorization: `Bearer ${authUser.authToken}`,
-        },
-      }
-    );
+    const res = await axios
+      .post(
+        "http://localhost:8000/api/post/" + postId + "/like",
+        { userId },
+        {
+          headers: {
+            Authorization: `Bearer ${authUser.authToken}`,
+          },
+        }
+      )
+      .catch((error) => {
+        throw error.response.data.message;
+      });
     return res.data;
   }
 
@@ -80,6 +115,7 @@ export function usePost() {
     getOnePost,
     createPost,
     deletePost,
+    getUser,
     likePost,
   };
 }

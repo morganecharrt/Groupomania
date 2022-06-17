@@ -10,6 +10,7 @@ const { createPost } = usePost();
 
 const { authUser } = useUserStore();
 const imageUrlPreview = ref("");
+const error = ref("");
 
 const newPost = reactive({
   description: "",
@@ -18,21 +19,30 @@ const newPost = reactive({
 const file = ref(null);
 
 function onFileChange(e) {
-  var files = e.target.files || e.dataTransfer.files;
+  var files = e.target.files;
   if (!files.length) return;
   file.value = e.target.files[0];
   imageUrlPreview.value = URL.createObjectURL(file.value);
 }
 
 async function handleSubmit() {
-  await createPost(newPost, file.value);
-  router.push("/");
+  try {
+    if (newPost.description != "") {
+      await createPost(newPost, file.value);
+      router.push("/");
+    } else {
+      error.value = "Le champs description est obligatoire";
+    }
+  } catch (e) {
+    error.value = e;
+  }
 }
 </script>
 
 <template>
   <div>
     <h2 class="my-14">Créer une publication</h2>
+    <div class="text-primary p-6 text-center" v-if="error">{{ error }}</div>
     <form
       @submit.prevent="handleSubmit()"
       class="flex flex-col gap-5 shadow-boxShadowForm rounded-lg bg-white py-12 px-10 md:w-2/3 w-full mx-auto my-0"

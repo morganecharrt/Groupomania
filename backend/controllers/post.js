@@ -3,27 +3,37 @@ const fs = require("fs");
 const Joi = require("joi");
 
 const postSchema = Joi.object({
-  description: Joi.string().required()});
+  description: Joi.string().required(),
+});
 
 exports.createPost = (req, res, next) => {
   const postObject = JSON.parse(req.body.post);
-  const { error } = postSchema.validate({description: postObject.description});
+  const { error } = postSchema.validate({
+    description: postObject.description,
+  });
 
   if (error == undefined) {
-  delete postObject._id;
-  const post = new Post({
-    ...postObject,
-    imageUrl: `${req.protocol}://${req.get("host")}/images/${
-      req.file.filename
-    }`,
-  });
-  post
-    .save()
-    .then(() => res.status(201).json({ message: "Objet enregistré !" }))
-    .catch((error) => res.status(400).json({ error }));
-} else {
-  return res.status(400).json({ message: error.details[0].message });
-}};
+    delete postObject._id;
+    let image = "";
+    if (req.file) {
+      image = `${req.protocol}://${req.get("host")}/images/${
+        req.file.filename
+      }`;
+    }
+    const post = new Post({
+      ...postObject,
+      imageUrl: image,
+    });
+    post
+      .save()
+      .then(() => res.status(201).json({ message: "Objet enregistré !" }))
+      .catch((error) => res.status(400).json({ error }));
+  } else {
+    return res
+      .status(400)
+      .json({ message: "Le champ description est obligatoire" });
+  }
+};
 
 exports.getOnePost = (req, res, next) => {
   Post.findOne({
@@ -40,17 +50,44 @@ exports.getOnePost = (req, res, next) => {
 };
 
 exports.modifyPost = (req, res, next) => {
-  const postObject = req.file
-    ? {
-        ...JSON.parse(req.body.post),
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${
-          req.file.filename
-        }`,
-      }
-    : { ...req.body };
-  Post.updateOne({ _id: req.params.id }, { ...postObject, _id: req.params.id })
-    .then(() => res.status(200).json({ message: "Objet modifié !" }))
-    .catch((error) => res.status(400).json({ error }));
+  const postObject = JSON.parse(req.body.post);
+  const { error } = postSchema.validate({
+    description: postObject.description,
+  });
+
+  if (error == undefined) {
+    let postObjectFinal = {};
+    let image = "";
+    if (req.file) {
+      image = `${req.protocol}://${req.get("host")}/images/${
+        req.file.filename
+      }`;
+
+      postObjectFinal = {
+        ...postObject,
+        imageUrl: image,
+      };
+    } else {
+      Post.findOne({ _id: req.params.id })
+        .then((post) => {
+          const filename = post.imageUrl.split("/images/")[1];
+          fs.unlink(`images/${filename}`, () => {});
+        })
+        .catch((error) => res.status(500).json({ error }));
+
+      postObjectFinal = { ...postObject };
+    }
+    Post.updateOne(
+      { _id: req.params.id },
+      { ...postObjectFinal, _id: req.params.id }
+    )
+      .then(() => res.status(200).json({ message: "Objet modifié !" }))
+      .catch((error) => res.status(400).json({ error }));
+  } else {
+    return res
+      .status(400)
+      .json({ message: "Le champ description est obligatoire" });
+  }
 };
 
 exports.deletePost = (req, res, next) => {
