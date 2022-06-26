@@ -12,8 +12,8 @@ export function usePost() {
           Authorization: `Bearer ${authUser.authToken}`,
         },
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        throw error.response.data.message;
       });
 
     return res.data.reverse();
@@ -24,8 +24,8 @@ export function usePost() {
       .post("http://localhost:8000/api/auth/user", {
         userId,
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        throw error.response.data.message;
       });
     return res.data;
   }
