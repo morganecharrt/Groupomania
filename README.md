@@ -1,6 +1,10 @@
-# groupomania-front
+# Groupomania
 
-This template should help get you started developing with Vue 3 in Vite.
+## FRONTEND Vue JS
+
+Use Vue JS for create the frontend.
+Pinia use for store.
+Vee-validate / YUP use for form validation.
 
 ## Recommended IDE Setup
 
@@ -28,8 +32,12 @@ npm run dev
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+## BACKEND Express
+
+Use Express for create the backend.
+
+### Compile and Hot-Reload for Development
 
 ```sh
-npm run lint
+node server
 ```
