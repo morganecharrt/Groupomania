@@ -52,22 +52,23 @@ const counterLike = ref(post.like.length);
 const handleLike = async () => {
   try {
     await likePost(post._id, authUser.userId);
+
+    isLike.value = !isLike.value;
+    if (isLike.value) {
+      counterLike.value++;
+    } else {
+      counterLike.value--;
+    }
   } catch (e) {
     error.value = e;
   }
-
-  isLike.value = !isLike.value;
-  if (isLike.value) {
-    counterLike.value++;
-  } else {
-    counterLike.value--;
-  }
 };
 
-const user = ref(null);
+const author = ref(null);
+
 onMounted(async () => {
   const data = await getUser(post.userId);
-  user.value = data;
+  author.value = data;
 });
 </script>
 
@@ -86,8 +87,8 @@ onMounted(async () => {
     <div
       class="flex flex-row w-full justify-end items-center gap-2 bg-white py-2 px-4 border-t"
     >
-      <div v-if="user" class="justify-self-start grow">
-        Publié par <strong>{{ user.username }}</strong>
+      <div v-if="author" class="justify-self-start grow">
+        Publié par <strong>{{ author.username }}</strong>
       </div>
       <div class="flex flex-row items-center justify-center">
         <div class="text-primary p-1" v-if="error">{{ error }}</div>
