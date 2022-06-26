@@ -68,7 +68,6 @@ exports.login = (req, res, next) => {
 };
 
 exports.getUser = (req, res, next) => {
-  console.log(req.body.userId);
   User.findOne({
     _id: req.body.userId,
   })
